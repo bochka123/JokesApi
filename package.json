@@ -1,0 +1,27 @@
+{
+  "name": "jokesapi",
+  "version": "1.0.0",
+  "description": "This project is api for jokes",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bochka123/JokesApi.git"
+  },
+  "author": "Oleksandr Tkach",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bochka123/JokesApi/issues"
+  },
+  "homepage": "https://github.com/bochka123/JokesApi#readme",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
