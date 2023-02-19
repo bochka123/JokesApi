@@ -4,15 +4,24 @@ const http = require("http");
 
 const server = http.createServer(function (request, response){
     if(request.url === "/api/jokes" && request.method === "GET"){
-        let allJokes = getAllJokes(request, response);
+        let allJokes = getAllJokes();
         response.writeHead(200, {"Content-type":"text/json"})
         response.end(JSON.stringify(allJokes));
+    }else if(request.url === "/api/jokes" && request.method === "POST"){
+        let data = '';
+        request.on('data', function (chunk){
+            data += chunk;
+        })
+        request.on('end', function (){
+            addJoke(data);
+        })
+        response.end();
     }
 })
 
 server.listen(3000);
 
-function getAllJokes(request, response){
+function getAllJokes(){
     let arrayOfJokes = []
     let pathToData = path.join(__dirname, "data");
     let data = fs.readdirSync(pathToData);
@@ -23,4 +32,13 @@ function getAllJokes(request, response){
         arrayOfJokes.push(joke);
     }
     return arrayOfJokes;
+}
+
+function addJoke(jokeString){
+    let joke = JSON.parse(jokeString);
+    joke.likes = 0;
+    joke.dislikes = 0;
+    let pathToData = path.join(__dirname, "data");
+    let pathToFile = path.join(pathToData, `${fs.readdirSync(pathToData).length}.json`)
+    fs.writeFileSync(pathToFile, JSON.stringify(joke));
 }
