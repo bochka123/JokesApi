@@ -15,6 +15,7 @@ const server = http.createServer(function (request, response){
         request.on('end', function (){
             addJoke(data);
         })
+        response.writeHead(200);
         response.end();
     }
 })
