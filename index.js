@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
+const url = require("url");
 
 const server = http.createServer(function (request, response){
     if(request.url === "/api/jokes" && request.method === "GET"){
@@ -17,6 +18,28 @@ const server = http.createServer(function (request, response){
         })
         response.writeHead(200);
         response.end();
+    }else if(request.url.startsWith('/api/like')){
+        const params = url.parse(request.url, true).query;
+        if(params.id === undefined){
+            response.writeHead(400);
+            response.end();
+        }
+        if(isNaN(params.id)){
+            response.writeHead(400);
+            response.end();
+        }
+        const pathToData = path.join(__dirname, "data");
+        const numberOfJokes = fs.readdirSync(pathToData).length;
+        if(params.id < 0 || params.id >= numberOfJokes){
+            response.writeHead(400);
+            response.end();
+        }
+        let pathToFile = path.join(pathToData, `${params.id}.json`);
+        let joke = JSON.parse(fs.readFileSync(pathToFile, 'utf-8'));
+        joke.likes++;
+        fs.writeFileSync(pathToFile, JSON.stringify(joke));
+        response.writeHead(200);
+        response.end();
     }
 })
 
@@ -24,8 +47,8 @@ server.listen(3000);
 
 function getAllJokes(){
     let arrayOfJokes = []
-    let pathToData = path.join(__dirname, "data");
-    let data = fs.readdirSync(pathToData);
+    const pathToData = path.join(__dirname, "data");
+    const data = fs.readdirSync(pathToData);
     for(let i = 0; i < data.length; i++){
         let pathToFile = path.join(pathToData, `${i}.json`)
         let jokeString = fs.readFileSync(pathToFile, "utf-8");
@@ -39,7 +62,7 @@ function addJoke(jokeString){
     let joke = JSON.parse(jokeString);
     joke.likes = 0;
     joke.dislikes = 0;
-    let pathToData = path.join(__dirname, "data");
-    let pathToFile = path.join(pathToData, `${fs.readdirSync(pathToData).length}.json`)
+    const pathToData = path.join(__dirname, "data");
+    const pathToFile = path.join(pathToData, `${fs.readdirSync(pathToData).length}.json`)
     fs.writeFileSync(pathToFile, JSON.stringify(joke));
 }
