@@ -12,45 +12,41 @@ const server = http.createServer(function (request, response){
         let data = '';
         request.on('data', function (chunk){
             data += chunk;
-        })
+        });
         request.on('end', function (){
             addJoke(data);
-        })
+        });
         response.writeHead(200);
         response.end();
     }else if(request.url.startsWith('/api/like')){
         const params = url.parse(request.url, true).query;
-        if(params.id === undefined){
+        if(addLikesOrDislikes(params, true)){
+            response.writeHead(200);
+            response.end();
+        }else{
             response.writeHead(400);
             response.end();
         }
-        if(isNaN(params.id)){
+    }else if(request.url.startsWith('/api/dislike')){
+        const params = url.parse(request.url, true).query;
+        if(addLikesOrDislikes(params, false)){
+            response.writeHead(200);
+            response.end();
+        }else{
             response.writeHead(400);
             response.end();
         }
-        const pathToData = path.join(__dirname, "data");
-        const numberOfJokes = fs.readdirSync(pathToData).length;
-        if(params.id < 0 || params.id >= numberOfJokes){
-            response.writeHead(400);
-            response.end();
-        }
-        let pathToFile = path.join(pathToData, `${params.id}.json`);
-        let joke = JSON.parse(fs.readFileSync(pathToFile, 'utf-8'));
-        joke.likes++;
-        fs.writeFileSync(pathToFile, JSON.stringify(joke));
-        response.writeHead(200);
-        response.end();
     }
 })
 
 server.listen(3000);
 
 function getAllJokes(){
-    let arrayOfJokes = []
+    let arrayOfJokes = [];
     const pathToData = path.join(__dirname, "data");
     const data = fs.readdirSync(pathToData);
     for(let i = 0; i < data.length; i++){
-        let pathToFile = path.join(pathToData, `${i}.json`)
+        let pathToFile = path.join(pathToData, `${i}.json`);
         let jokeString = fs.readFileSync(pathToFile, "utf-8");
         let joke = JSON.parse(jokeString);
         arrayOfJokes.push(joke);
@@ -63,6 +59,26 @@ function addJoke(jokeString){
     joke.likes = 0;
     joke.dislikes = 0;
     const pathToData = path.join(__dirname, "data");
-    const pathToFile = path.join(pathToData, `${fs.readdirSync(pathToData).length}.json`)
+    const pathToFile = path.join(pathToData, `${fs.readdirSync(pathToData).length}.json`);
     fs.writeFileSync(pathToFile, JSON.stringify(joke));
+}
+
+function addLikesOrDislikes(params, check){
+    if(isNaN(params.id)){
+        return false;
+    }
+    const pathToData = path.join(__dirname, "data");
+    const numberOfJokes = fs.readdirSync(pathToData).length;
+    if(params.id < 0 || params.id >= numberOfJokes){
+        return false;
+    }
+    let pathToFile = path.join(pathToData, `${params.id}.json`);
+    let joke = JSON.parse(fs.readFileSync(pathToFile, 'utf-8'));
+    if(check){
+        joke.likes++;
+    }else {
+        joke.dislikes++;
+    }  
+    fs.writeFileSync(pathToFile, JSON.stringify(joke));
+    return true;
 }
