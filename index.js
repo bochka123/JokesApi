@@ -4,6 +4,7 @@ const http = require("http");
 const url = require("url");
 
 const server = http.createServer(function (request, response){
+    response.setHeader('Access-Control-Allow-Origin', '*');
     if(request.url === "/api/jokes" && request.method === "GET"){
         let allJokes = getAllJokes();
         response.writeHead(200, {"Content-type":"text/json"})
